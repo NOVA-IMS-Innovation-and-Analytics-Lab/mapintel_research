@@ -1,5 +1,4 @@
 import os
-import sys
 import re
 import string
 from json import dumps
@@ -24,10 +23,9 @@ from octis.evaluation_metrics.diversity_metrics import TopicDiversity, InvertedR
 from octis.evaluation_metrics.coherence_metrics import Coherence
 
 dirname = os.path.dirname(__file__)
-outputs_dir = os.path.join(dirname, "../outputs/experiments")
-sys.path.append(os.path.join(dirname, "../"))  # Necessary so we can import custom modules from api. See: https://realpython.com/lessons/module-search-path/
+outputs_dir = os.path.join(dirname, "artifacts")
 
-from experiments.utils import Timer, Doc2VecScikit, SentenceTransformerScikit, CTMScikit, BERTopic, LatentDirichletAllocation
+from utils import Timer, Doc2VecScikit, SentenceTransformerScikit, CTMScikit, BERTopic, LatentDirichletAllocation
 
 VALID_EMBEDDINGS_MODELS = ['doc2vec', 'sentence-transformers/msmarco-distilbert-base-v4']
 VALID_TOPIC_MODELS = ['BERTopic', 'CTM', 'LDA']
