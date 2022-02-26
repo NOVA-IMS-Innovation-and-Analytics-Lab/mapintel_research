@@ -1,4 +1,3 @@
-
 @article{berry1995,
   title = {Using Linear Algebra for Intelligent Information Retrieval},
   author = {Berry, Michael W. and Dumais, Susan T. and O'Brien, Gavin W.},
@@ -780,4 +779,48 @@
   abstract = {We describe Cartolabe, a web-based multiscale system for visualizing and exploring large textual corpora based on topics, introducing a novel mechanism for the progressive visualization of filtering queries. Initially designed to represent and navigate through scientific publications in different disciplines, Cartolabe has evolved to become a generic framework and accommodate various corpora, ranging from Wikipedia (4.5M entries) to the French National Debate (4.3M entries). Cartolabe is made of two modules: The first relies on natural language processing methods, converting a corpus and its entities (documents, authors, and concepts) into high-dimensional vectors, computing their projection on the two-dimensional plane, and extracting meaningful labels for regions of the plane. The second module is a web-based visualization, displaying tiles computed from the multidimensional projection of the corpus using the Umap projection method. This visualization module aims at enabling users with no expertise in visualization and data analysis to get an overview of their corpus, and to interact with it: exploring, querying, filtering, panning, and zooming on regions of semantic interest. Three use cases are discussed to illustrate Cartolabe's versatility and ability to bring large-scale textual corpus visualization and exploration to a wide audience.},
   keywords = {Data visualization,Filtering,Natural language processing,Organizations,Task analysis,Two dimensional displays,Visualization,Web services},
   file = {/home/dsilva/Zotero/storage/BXVG8ZK7/Caillou et al. - 2021 - Cartolabe A Web-Based Scalable Visualization of L.pdf;/home/dsilva/Zotero/storage/6J85AX9G/metrics.html}
+}
+
+@inproceedings{vinh2009,
+  title = {Information Theoretic Measures for Clusterings Comparison: Is a Correction for Chance Necessary?},
+  shorttitle = {Information Theoretic Measures for Clusterings Comparison},
+  booktitle = {Proceedings of the 26th {{Annual International Conference}} on {{Machine Learning}}},
+  author = {Vinh, Nguyen Xuan and Epps, Julien and Bailey, James},
+  year = {2009},
+  month = jun,
+  series = {{{ICML}} '09},
+  pages = {1073--1080},
+  publisher = {{Association for Computing Machinery}},
+  address = {{New York, NY, USA}},
+  doi = {10.1145/1553374.1553511},
+  abstract = {Information theoretic based measures form a fundamental class of similarity measures for comparing clusterings, beside the class of pair-counting based and set-matching based measures. In this paper, we discuss the necessity of correction for chance for information theoretic based measures for clusterings comparison. We observe that the baseline for such measures, i.e. average value between random partitions of a data set, does not take on a constant value, and tends to have larger variation when the ratio between the number of data points and the number of clusters is small. This effect is similar in some other non-information theoretic based measures such as the well-known Rand Index. Assuming a hypergeometric model of randomness, we derive the analytical formula for the expected mutual information value between a pair of clusterings, and then propose the adjusted version for several popular information theoretic based measures. Some examples are given to demonstrate the need and usefulness of the adjusted measures.},
+  isbn = {978-1-60558-516-1}
+}
+
+@inproceedings{cho2014,
+  title = {Learning {{Phrase Representations}} Using {{RNN Encoder}}\textendash{{Decoder}} for {{Statistical Machine Translation}}},
+  booktitle = {Proceedings of the 2014 {{Conference}} on {{Empirical Methods}} in {{Natural Language Processing}} ({{EMNLP}})},
+  author = {Cho, Kyunghyun and {van Merri{\"e}nboer}, Bart and Gulcehre, Caglar and Bahdanau, Dzmitry and Bougares, Fethi and Schwenk, Holger and Bengio, Yoshua},
+  year = {2014},
+  month = oct,
+  pages = {1724--1734},
+  publisher = {{Association for Computational Linguistics}},
+  address = {{Doha, Qatar}},
+  doi = {10.3115/v1/D14-1179},
+  file = {/home/dsilva/Zotero/storage/ESCH5H8K/Cho et al. - 2014 - Learning Phrase Representations using RNN Encoder–.pdf}
+}
+
+@article{hochreiter1997,
+  title = {Long {{Short-Term Memory}}},
+  author = {Hochreiter, Sepp and Schmidhuber, J{\"u}rgen},
+  year = {1997},
+  month = nov,
+  journal = {Neural Computation},
+  volume = {9},
+  number = {8},
+  pages = {1735--1780},
+  issn = {0899-7667},
+  doi = {10.1162/neco.1997.9.8.1735},
+  abstract = {Learning to store information over extended time intervals by recurrent backpropagation takes a very long time, mostly because of insufficient, decaying error backflow. We briefly review Hochreiter's (1991) analysis of this problem, then address it by introducing a novel, efficient, gradient based method called long short-term memory (LSTM). Truncating the gradient where this does not do harm, LSTM can learn to bridge minimal time lags in excess of 1000 discrete-time steps by enforcing constant error flow through constant error carousels within special units. Multiplicative gate units learn to open and close access to the constant error flow. LSTM is local in space and time; its computational complexity per time step and weight is O. 1. Our experiments with artificial data involve local, distributed, real-valued, and noisy pattern representations. In comparisons with real-time recurrent learning, back propagation through time, recurrent cascade correlation, Elman nets, and neural sequence chunking, LSTM leads to many more successful runs, and learns much faster. LSTM also solves complex, artificial long-time-lag tasks that have never been solved by previous recurrent network algorithms.},
+  file = {/home/dsilva/Zotero/storage/YJV35TG3/Long-Short-Term-Memory.html}
 }

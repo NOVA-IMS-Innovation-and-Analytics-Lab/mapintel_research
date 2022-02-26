@@ -4,6 +4,7 @@
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
 \usepackage{float}
+\usepackage{caption}
 \usepackage{subcaption}
 \usepackage{graphicx}
 \usepackage{multirow}
@@ -13,6 +14,7 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{pgfplots}
 \usepackage{siunitx,etoolbox}
+\usepackage{tabularx}
 \pgfplotsset{compat=1.12}
 
 \sisetup{
@@ -22,6 +24,7 @@
 %% local redefinitions
 \renewrobustcmd{\bfseries}{\fontseries{b}\selectfont}
 \renewrobustcmd{\boldmath}{}
+\captionsetup[figure]{font=small,labelfont=small}
 
 \title{MapIntel: Enhancing Competitive Intelligence Acquisition Through Embeddings and Visual Analytics}
 \author{David Silva, Fernando Bação}
@@ -50,10 +53,10 @@ Various studies have attempted to create systems for exploring and gathering int
 Although the previously mentioned systems have successfully been used for dealing with large amounts of text, insufficient attention has been paid to the exploratory and serendipitous aspects of the analyst's task. Accordingly, we propose an information environment that supports analysts in having stimulating and productive information encounters. Thus, contrarily to previous systems, we center ours around Information Encountering which is defined by \citet{erdelez2020} to encompass "finding interesting, useful or potentially useful information when looking for some other information, not looking for any information in particular, or not looking for information at all". This is achieved by incorporating two types of information acquisition tasks: \emph{searching}, consisting of an information retrieval module that allows ad hoc queries on the entire document collection, giving the user the ability to actively seek information, and \emph{browsing}, consisting of a visualization module that equips the user with tools to actively or passively acquire information through the visual exploration of the document corpus (and its thematic cohorts) in a two-dimensional map. 
 
 % Talk about the recent advent of the transformers as a justification for this system and as a distinguishing factor
-Another unique characteristic of our work is the use of state-of-the-art NLP techniques. With the recent emergence of the Transformer architecture \citep{vaswani2017}, significant improvements were made in several NLP subdomains. This new architecture is based solely on the attention mechanism, providing parallelization capabilities and significant improvements in training time. Also, the Transformer can more easily learn long-range relationships between terms in the input sequence than pre-existing architectures \citep{vaswani2017}. Language models like Bidirectional Encoder Representations from Transformers (BERT) \citep{devlin2019} leverage this architecture, making up a large part of the modern NLP landscape by providing an off-the-shelf, powerful way to create state-of-the-art models for a wide range of tasks.
+With the recent emergence of the Transformer architecture \citep{vaswani2017}, significant improvements were made in several NLP subdomains, having reached state-of-the-art results in a wide range of tasks. This new architecture is based solely on the attention mechanism, providing parallelization capabilities and thus avoiding the sequential nature of existing Recurrence models \citep{hochreiter1997, cho2014}. The attention mechanism allows incorporating information from the input sequence words into the one it is currently being processed, thus providing "context" to the word from the rest of the sequence. Language models like Bidirectional Encoder Representations from Transformers (BERT) \citep{devlin2019} leverage this architecture, making up a large part of the modern NLP landscape by providing an off-the-shelf, powerful way to create state-of-the-art models for a wide range of tasks. The Transformer flexibility, allied to its reduced training times and improved ability to learn long-range relationships between terms in a sequence, make it one of the pillars of modern NLP research and we intend to apply this architecture in our work.
 
 % Specify your objective(s): what you intend to find out or express in your paper
-In this paper, we explore Transformer-based models for representing documents as semantic vectors. These vectorial representations are commonly denominated as embeddings and we intend to use them in a CI system as a mechanism for extracting information from environmental data. Furthermore, the system facilitates Information Encountering by incorporating \emph{searching} and \emph{browsing} mechanisms that leverage the document embeddings. We name the proposed system as MapIntel from (Competitive) Intelligence Map. The code developed for this work can be accessed at \href{https://github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel_project}{github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel\_project}.
+In this paper, we explore Transformer-based models for representing documents as semantic vectors. These vectorial representations are commonly denominated as embeddings and we intend to use them in a CI system as a mechanism for extracting information from environmental data. Furthermore, the system facilitates Information Encountering by incorporating \emph{searching} and \emph{browsing} mechanisms that leverage the document embeddings. We name the proposed system as MapIntel from (Competitive) Intelligence Map.
 
 \section{Related Work}
 % Introduction: The introduction should clearly establish the focus and purpose of the literature review.
@@ -154,8 +157,8 @@ Given the inherent difficulty of evaluating the system on its entirety, we decid
 
 We use three main metrics to guide our model comparison: 
 \begin{itemize}
-  \item \textbf{$k$NN classifier accuracy for the UMAP projections}: evaluate the quality of the two-dimensional projections by inferring their labels using a $k$NN classifier and computing its Accuracy for multiple values of $k$. We present the average Accuracy over the range of $k$ values we tried: 10, 20, 40, 80, 160.
-  \item \textbf{Normalized Mutual Information (NMI) for the topic assignments}: evaluate the identification of the topical nature of the documents by computing the NMI between the original labels and the assigned topics. The NMI ranges between 0 and 1 where the former corresponds to no mutual information, and the latter indicates perfect correlation. The higher the value of this metric, the better we can capture the original labels and the main topics in the corpus.
+  \item \textbf{$k$NN classifier accuracy for the UMAP projections}: evaluate the quality of the two-dimensional projections by inferring their labels using a $k$NN classifier and computing its Accuracy for multiple values of $k$ \citep{mcinnes2020}. We present the average Accuracy over the range of $k$ values we tried: 10, 20, 40, 80, 160.
+  \item \textbf{Normalized Mutual Information (NMI) for the topic assignments}: information theoretic based measure that tells us how much knowing about the topics of the documents reduces our uncertainty about the original labels and vice-versa \citep{vinh2009}. The NMI ranges between 0 and 1 where the former corresponds to no mutual information, and the latter indicates perfect correlation. The higher the value of this metric, the better we can capture the true topical nature of the documents, reflected by their labels, with the assigned topics.
   \item \textbf{Topic coherence}: measure the quality of the words that describe each topic by applying the $C_v$ metric \citep{roder2015} indicating whether the words that compose a given topic support each other. This metric is shown to be correlated with human ratings on understandability of topic descriptions, given as word sets, and it ranges between -1 and 1, where the former corresponds to incoherent topic descriptions, and the latter indicates a coherent topic description.
 \end{itemize}
 
@@ -163,7 +166,7 @@ We use three main metrics to guide our model comparison:
 We perform hyperparameter tuning using a multi-objective approach to optimize the three metrics specified previously. We use the Tree-structured Parzen Estimator (TPE) algorithm \citep{bergstra2011, ozaki2020} for sampling the hyperparameter space at each trial $t$ of the optimization process. Contrarily to random search, TPE samples values $x_t^\alpha$ for each hyperparameter $\alpha$ by fitting one Gaussian Mixture Model (GMM) $l(x^\alpha)$ to the set of values associated with the best objective scores in past observed trials, and another GMM $g(x^\alpha)$ to the remaining values. It then chooses the hyperparameter value $x_t^\alpha$ drawn from $l(x^\alpha)$ that maximizes the ratio $\frac{l(x^\alpha)}{g(x^\alpha)}$. For each trial, we evaluate the sampled hyperparameters using a 5-fold cross-validation approach where the folds preserve the percentage of samples of each class. In total, 100 trials were evaluated.
 
 \subsection{Results}
-Our results based on the setup described above are shown in Table \ref{table2}. For each trial, we report the average results and standard deviations over the cross-validation folds. The table contains the best trials for each of the Topic/Embedding model combinations according to the MinMax average of the three objective metrics. We can see that the combination that uses BERTopic and SBERT outperform the others with respect to both NMI and $C_v$ while having a within standard deviation $k$NN Classifier Accuracy to the best value. Another interesting observation is that combinations using SBERT have generally better results.
+Our results based on the setup described above are shown in Table \ref{table2}. For each trial, we report the average results and standard deviations over the cross-validation folds. The table contains the best trials for each of the Topic/Embedding model combinations according to the average of the three objective metrics, which we applied MinMax scaling to avoid any impact of the metrics scale on the choice of the best model. We can see that the combination that uses BERTopic and SBERT outperform the others with respect to both NMI and $C_v$ while having a within standard deviation $k$NN Classifier Accuracy to the best value. Another interesting observation is that combinations using SBERT have generally better results. To facilitate results reproduction efforts, we open-sourced the code developed for the experiments at \href{https://github.com/dfhssilva/mapintel_research}{github.com/dfhssilva/mapintel\_research}.
 
 \sisetup{separate-uncertainty}
 \begin{table}[H]
@@ -190,7 +193,7 @@ Our results based on the setup described above are shown in Table \ref{table2}. 
   \label{table2}
 \end{table}
 
-Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 newsgroups dataset. Figure \ref{umap_train_plots} shows the comparison between the distribution of the original labels and the topics assigned by the best performing model according to the MinMax average score for the train data. Likewise, Figure \ref{umap_test_plots} shows the same comparison for the test data and demonstrates the ability of the model to generalize to unseen samples. We can see that the identified topical cohorts are mostly matching with the original groups, indicating that the embeddings have learned the original labels in a fully unsupervised way. Additionally, it is possible to see that similarly semantic topics are located close to each other in the map. This is the case of all the computation related topics such as \emph{window.server.windows.motif.display} and \emph{format.files.graphics.file.gif}. Finally, there is also an agreement between the topic meaning given by the top 5 words describing the topics and the original label description. For example, the same points that have the label \emph{sci.space} also have the topic \emph{space.launch.nasa.orbit.shuttle}.
+Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 newsgroups dataset. Figure \ref{umap_train_plots} shows the comparison between the distribution of the original labels and the topics assigned by the best performing model according to the MinMax average score for the train data. Likewise, Figure \ref{umap_test_plots} shows the same comparison for the test data and demonstrates the ability of the model to generalize to unseen samples. We can see that the identified topical cohorts are mostly matching with the original groups, indicating that the embeddings have learned the original labels in a fully unsupervised way. Additionally, it is possible to see that semantic similar topics are located close to each other in the map. This is the case of all the computation related topics such as \emph{window.server.windows.motif.display} and \emph{format.files.graphics.file.gif}. Finally, there is also an agreement between the topic meaning given by the top 5 words describing the topics and the original label description. For example, the same points that have the label \emph{sci.space} also have the topic \emph{space.launch.nasa.orbit.shuttle}. Figure \ref{umap_train_plots_zoom} in the appendix shows how much correspondence there is both in terms of labels and positioning for technological-related documents - we can see how the distribution of the original label \emph{comp.graphics} matches the distribution of the topic \emph{format.files.graphics.file.gif}, likewise \emph{comp.windows.x} matches \emph{window.server.windows.motif.display}, and \emph{sci.electronics} matches \emph{amp.radio.powed.voltage.use}, whereas the remaining original labels are lost, giving birth to new, and more semantically coherent, groups of documents (note how the distribution of the original label \emph{comp.sys.ibm.pc.hardware} is very dispersed, even overlapping with other groups and how the distribution of the topics occupying the same region is very clear and compact).
 
 \begin{figure}[H]
   \centering
@@ -254,7 +257,7 @@ To evaluate the MapIntel system with real data, we gathered news articles from m
   \label{ci_sources}
 \end{table}
 
-The API employed retrieves news articles and their metadata, including attributes such as source, author, title, description, content, category, URL, and publication date and time. We used this API to feed the system with updated data on a schedule while focusing on articles written in English from a set of predefined categories (business, entertainment, general, health, science, sports, technology). The system was fed with a total of 334,925 articles during a period of around 5 months.
+The API employed retrieves news articles and their metadata, including attributes such as source, author, title, description, content, category, URL, and publication date and time. We used this API to feed the system with updated data on a schedule while focusing on articles written in English from a set of predefined categories (business, entertainment, general, health, science, sports, technology). The system was fed with a total of 334,925 articles during the period between October, 2020 and June, 2021. 
 
 Due to API limitations, the retrieved data has its content truncated to 200 characters. To overcome this, we treat a single document unit as the concatenation of title, description, and content, providing us a semantically loaded piece of text that we can use for testing the system. Despite this limitation, we give the user the possibility of accessing the full article through its URL. We ensure that each document is unique, is written in English, and doesn't have any HTML tags or any strange pattern.
 
@@ -262,12 +265,12 @@ Once the data is cleaned, it follows the Indexing pipeline \ref{indexing_pipelin
 
 \begin{figure}[H]
   \centering
-  \includegraphics[scale=0.6]{./assets/ui_screenshot}
+  \includegraphics[scale=0.45]{./assets/ui_screenshot}
   \caption{\textbf{MapIntel webapp interface}. Composed of four main components: search box, interactive scatter plot, parameter sidebar, and list of results.}
   \label{app_ui}
 \end{figure}
 
-We also built a simple web application in Python based on the MapIntel system. The web application is containerized and composed of three main modules: an Elasticsearch instance container that stores and indexes the documents, their metadata, their topics and their embeddings, a container responsible for all the computations involved in the three pipelines of the system that communicates with the user interface through a FastAPI\footnote{\href{https://fastapi.tiangolo.com/}{fastapi.tiangolo.com}} server providing the necessary endpoints, and a third container consisting of a Streamlit\footnote{\href{https://streamlit.io/}{streamlit.io}} application that interacts with the data through HTTP requests.
+We also built a simple web application in Python based on the MapIntel system. The web application is containerized and composed of three main modules: an Elasticsearch instance container that stores and indexes the documents, their metadata, their topics and their embeddings, a container responsible for all the computations involved in the three pipelines of the system that communicates with the user interface through a FastAPI\footnote{\href{https://fastapi.tiangolo.com/}{fastapi.tiangolo.com}} server providing the necessary endpoints, and a third container consisting of a Streamlit\footnote{\href{https://streamlit.io/}{streamlit.io}} application that interacts with the data through HTTP requests. For transparency, the code used for the web application is made public at \href{https://github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel_project}{github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel\_project}.
 
 We highlight the user interface of the app in Figure \ref{app_ui}. It is composed of 4 main components: a \textbf{search box} at the top of the page that the user can use to write any natural language query, an \textbf{interactive scatter plot} that shows the UMAP projection of the document embeddings and allows the exploration of the corpus, a \textbf{sidebar} at the left where the user can specify any additional parameter or binary filter to the query and map, and a \textbf{list of results} at the bottom that contains the documents with the highest scoring for the specified query.
 
@@ -275,20 +278,23 @@ The app enables information searching by receiving a query through the search bo
 
 \begin{table}[H]
   \centering
-  \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}llll@{}}
+  \resizebox{0.85\textwidth}{!}{%
+    \begin{tabularx}{\linewidth}{lXl}
       \toprule
-      \textbf{Query}                       & \textbf{Top 3 Results (Title)}                                                                     & \textbf{Score} & \textbf{Result Topic}  \\  \midrule
-      \multirow{3}{*}{"Stock Market News"} & Stock Market Today With Jim Cramer: Microsoft Earnings Reaction - TheStreet                        & 6.90           & 7                      \\
-                                           & Stock Market Today With Jim Cramer: Home Depot Falls - TheStreet                                   & 6.27           & -1                     \\
-                                           & Stock Market Today With Jim Cramer: Apple Event Preview - TheStreet                                & 6.12           & -1                     \\  \midrule
-      \multirow{3}{*}{"Indian Elections"}  & India elections: Modi party defeated in West Bengal battleground - BBC News                        & 5.36           & 11                     \\
-                                           & At 103, India's first voter casts vote in Himachal panchayat radish polls                                 & 4.77           & -1                     \\
-                                           & Vote count in five Indian states under way as pandemic rages                                       & 4.44           & -1                     \\  \midrule
-      \multirow{3}{*}{"Oil Prices"}        & Oil prices near 2-year highs above \$70 as investors expect OPEC+ to confirm its supply policies   & 7.63           & -1                     \\
-                                           & Oil Prices Rally Towards \$70 As Demand Outlook Improves - OilPrice.com                            & 7.62           & -1                     \\
-                                           & Oil prices to reach \$72 by summer: Goldman Sachs - Fox Business                                   & 7.45           & 7                      \\  \bottomrule
-    \end{tabular}%
+      \textbf{Query}                            & \textbf{Top 3 Results (Title)}                                                                                 & \textbf{Score}  \\  \midrule
+      \multirow{3}{*}{"Suez Canal World Trade"} & Suez Canal blockage felt across the world as trade comes to a pause.                                           & 4.90            \\
+                                                & Suez Canal ship partially refloated after huge effort to unblock key global trade route.                       & 4.70            \\
+                                                & Egypt 'seizes' container ship over \$1bn Suez claim.                                                           & 4.42            \\  \midrule
+      \multirow{3}{*}{"Indian Elections"}       & India elections: Modi party defeated in West Bengal battleground - BBC News.                                   & 5.36            \\
+                                                & At 103, India's first voter casts vote in Himachal panchayat radish polls.                                     & 4.77            \\
+                                                & Vote count in five Indian states under way as pandemic rages.                                                  & 4.44            \\  \midrule
+      \multirow{3}{*}{"Oil Prices"}             & Oil prices near 2-year highs above \$70 as investors expect OPEC+ to confirm its supply policies.              & 7.63            \\
+                                                & Oil Prices Rally Towards \$70 As Demand Outlook Improves - OilPrice.com.                                       & 7.62            \\
+                                                & Oil prices to reach \$72 by summer: Goldman Sachs - Fox Business.                                              & 7.45            \\  \midrule
+      \multirow{3}{*}{"Myanmar Coup"}           & Myanmar Coup: With Aung San Suu Kyi Detained, Military Takes Control - NPR.                                    & 8.03            \\
+                                                & Myanmar's military has detained leader Aun San Suu Kyi in a coup. Here's what you need to know - CNN.          & 8.03            \\
+                                                & News24.com | Myanmar military stages coup and declares state of emergency, detains leader Aung San Suu Kyi.    & 7.94            \\  \bottomrule
+    \end{tabularx}%
   }
   \caption{Example queries and their top 3 results and respective scores. The results are computed according to the methodology described in \ref{query} and the scores range between 0 and 1.}
   \label{query_results}
@@ -299,7 +305,7 @@ An additional feature of the app is the ability to browse documents through the 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[scale=0.3]{./assets/map_screenshot}
+  \includegraphics[scale=0.325]{./assets/map_screenshot}
   \caption{\textbf{UMAP projection of the corpus}. The documents' SBERT embeddings are projected on two dimensions with UMAP and the data points are colored according to their assigned topic. The map can be used interactively by zooming, panning, hovering, and selecting points. On hovering, the document text and some metadata is displayed and on selection the document is queried against the rest of the corpus. The query is marked with an "X" in the map.}
   \label{app_map}
 \end{figure}
@@ -348,4 +354,25 @@ Our next steps will be to perform a more extensive evaluation of the system with
 
 \bibliographystyle{apalike}
 \bibliography{bibliography}
+
+\appendix
+\section{Zoom on UMAP plot}
+\begin{figure}[H]
+  \centering
+  \resizebox{\textwidth}{!}{%
+    \begin{subfigure}[b]{0.44\linewidth}
+      \includegraphics[width=\linewidth]{./assets/orig_umap_train_plot_zoom}
+      \caption{Original labels}
+      \label{umap_test_plots:a}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.47\linewidth}
+      \includegraphics[width=\linewidth]{./assets/top_umap_train_plot_zoom}
+      \caption{Topic labels}
+      \label{umap_test_plots:b}
+    \end{subfigure}
+  }
+  \caption{Zoom on technological region of UMAP. Comparison between UMAP planes of \textbf{train data} with original (a) and topic labels (b).}
+  \label{umap_train_plots_zoom}
+\end{figure}
+
 \end{document}
