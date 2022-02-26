@@ -22,7 +22,7 @@ python results.py
 
 To track and analyze the experiments' results we use MLflow. Launch the MLflow dashboard with:
 ```
-mlflow ui --backend-store-uri ./outputs/experiments/
+mlflow ui --backend-store-uri ./artifacts/mlruns/
 ```
 For a more in-depth analysis of the results you can consult the notebooks/results_exploration.ipynb file.
 
