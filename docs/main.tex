@@ -3,17 +3,18 @@
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
-\usepackage{float}
+\usepackage{float}  % improves the interface for defining floating objects
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{graphicx}
-\usepackage{multirow}
+\usepackage{multirow}  % provide multirow table capability
 \usepackage[authoryear]{natbib}
 \usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage[margin=1in]{geometry}
 \usepackage{pgfplots}
-\usepackage{siunitx,etoolbox}
+\usepackage{siunitx}  % provide std uncertainty next to means
+\usepackage{etoolbox}
 \usepackage{tabularx}
 \pgfplotsset{compat=1.12}
 
@@ -236,7 +237,7 @@ An important characteristic of BERTopic is that it is able to identify noise, le
 \section{Case Study}
 This use case is based on a real-world example, related with the recurrent tasks that the intelligence analysts at AICEP - Portuguese Trade \& Investment Agency have to perform. AICEP “is a government business entity, focused in encouraging the best competitive foreign companies to invest in Portugal and in contributing to the success of Portuguese companies abroad in their internationalization processes or export activities.” Given this mandate AICEP needs to monitor the world news and make sure it is updated with world events. Additionally, analysts at AICEP are called upon to produce reports on specific markets and industries, in order to guide the Portuguese state's diplomatic efforts and private company investments. These reports are pre-formatted, however the use and integration of text data remains a challenge. This is unfortunate as recent news and text documents allows a more detailed understanding of specific problems and nuances that are difficult to capture in an alphanumeric data table. The objective of this use case is to show how MapIntel can be used to mitigate this limitation and allow the inclusion of relevant text data in the report.
 
-In this case study we will show a step-by-step process of how the CI analyst can use MapIntel to screen the news and select those that are relevant to include in the reports. This process cannot be seen strictly as an information retrieval process, in fact it is much more an exploration process, in which the analyst's criterion plays a crucial role. The process starts with a set of keywords that the analyst selects based on his/her knowledge of the market or industry. These keywords are going to be used as seeds in the process of exploring the corpora. Each seed will be projected onto the two-dimensional surface produced by MapIntel, defining a set of neighbors in this semantic space, thus generating a number of candidate documents relevant for the report.
+In this case study, we will show the most important tools that the MapIntel system offers to explore and select relevant documents to include in a market or industry report. These tools allow the analyst to screen the news and select those that are relevant to include in the report. This process cannot be strictly seen as an information retrieval process, in fact it is much more an exploration process, in which the analyst’s criterion plays a crucial role. The process usually starts with a natural language query that the analyst defines based on his/her knowledge of the market or industry. The query is used by the system as the seed in the process of exploring the corpora. The query is projected onto the two-dimensional surface produced by MapIntel, and the neighbor documents are defined in the semantic space, thus generating a number of candidate results relevant for the report. From this starting position the analyst can interact visually with the results and the entire corpus, and guide his/her interest with successive queries, focusing in the most interesting/promising instances to include in the report.
 
 To evaluate the MapIntel system with real data, we gathered news articles from multiple international sources with the use of an API\footnote{\href{https://newsapi.org/}{newsapi.org}}. As already stated, there are multiple sources of CI, and different information can be obtained from these. \citet{dey2011} shows in Table \ref{ci_sources} what kind of information can be acquired from these sources, particularly the ones that are easily available through the web. We decided to work mainly with news articles as they provide a general and accessible means of information about the environment, however, our methodology is easily extensible to data from different sources. 
 
@@ -345,8 +346,8 @@ Besides the searching and browsing functionality, the system can also organize t
   \label{topic_labels}
 \end{table}
 
-\section{Conclusion and Perspectives}
-In this paper, we present MapIntel, a new system for extracting knowledge from large corpora of text documents. MapIntel differentiates from previous similar systems in that it leverages Transformer-based document embeddings to provide efficient, natural language searching of documents, a 2-dimensional map of the documents, and a topical organization of the corpus. The system is centered around the concept of Information Encountering \citet{erdelez2020}, providing \emph{browsing} and \emph{searching} capabilities to acquire information and promote serendipity. MapIntel is aimed at supporting Competitive Intelligence analysts by providing a tool that facilitates the exploration and monitoring of the competitive environment from textual data.
+\section{Conclusion}
+In this paper, we present MapIntel, a new system for extracting knowledge from large corpora of text documents. MapIntel differentiates from previous systems in that it leverages Transformer-based document embeddings to provide efficient, natural language searching of documents. The use of Transformer-based embeddings allows to harness the semantic attributes of the documents, which can then be explored in a 2-dimensional map, produced using UMAP. Additionally, MapIntel also organizes the documents in topical cohorts, providing yet another framework for the interaction of the user with the corpus. The system is centered around the concept of Information Encountering \citet{erdelez2020}, providing \emph{browsing} and \emph{searching} capabilities to acquire information and promote serendipity. MapIntel is aimed at supporting Competitive Intelligence analysts by providing a tool that facilitates the exploration and monitoring of the competitive environment from textual data.
 
 We detailed the methodology proposed, having evaluated it through a well-defined experimental setup. Furthermore, we showed how the MapIntel system can be used in a real-world case and we developed a web application, applying the proposed methodology, while enhancing the interaction with the underlying data through an interactive scatter plot. Finally, we developed and open-sourced the code base of the web application and our experiments, so the work can be easily reproducible and continued.
 
