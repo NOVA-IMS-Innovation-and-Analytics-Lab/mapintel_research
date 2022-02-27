@@ -4,7 +4,7 @@ This is the Research repository of the MapIntel project. This repository contain
 
 In the *notebooks folder* you can find various jupyter notebooks, each with an experimental purpose described in the first cell of each file. Most of these notebooks depend on an Elasticsearch search instance running locally and connected to port 9200, which contains the documents used by the MapIntel system.
 
-The MapIntel project repository, containing its codebase and instructions on how to use it, can be foud at [github.com/dfhssilva/mapintel_project](https://github.com/dfhssilva/mapintel_project).
+The MapIntel project repository, containing its codebase and instructions on how to use it, can be found at [github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel_project](https://github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel_project).
 
 ## Usage
 
