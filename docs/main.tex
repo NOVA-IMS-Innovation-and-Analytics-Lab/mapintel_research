@@ -1,31 +1,25 @@
 \documentclass[a4paper]{article}
 
-\usepackage[english]{babel}
-\usepackage[utf8x]{inputenc}
-\usepackage{amsmath}
-\usepackage{float}  % improves the interface for defining floating objects
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{graphicx}
-\usepackage{multirow}  % provide multirow table capability
-\usepackage[authoryear]{natbib}
-\usepackage{hyperref}
-\usepackage{booktabs}
-\usepackage[margin=1in]{geometry}
-\usepackage{pgfplots}
-\usepackage{siunitx}  % provide std uncertainty next to means
-\usepackage{etoolbox}
-\usepackage{tabularx}
-\pgfplotsset{compat=1.12}
+\usepackage[margin=1in]{geometry}  % redefine document margins
+\usepackage[authoryear]{natbib}    % use author-year reference type
+\usepackage{float}                 % improves the interface for defining floating objects
+\usepackage{caption}               % customise the captions in figures and tables
+\usepackage{subcaption}            % similar to caption but for subfigures
+\usepackage{graphicx}              % add optional arguments to \includegraphics
+\usepackage{multirow}              % provide multirow table capability
+\usepackage{hyperref}              % cross-referencing support
+\usepackage{booktabs}              % publication quality tables
+\usepackage{siunitx}               % provide std uncertainty next to means
+\usepackage{tabularx}              % allows text wrapping in table cells
 
-\sisetup{
-  table-align-uncertainty=true,
-  separate-uncertainty=true,
-}
-%% local redefinitions
+% configurations necessary for table2
+\sisetup{table-align-uncertainty,separate-uncertainty}
+\newcolumntype{Y}{S[detect-weight,mode=text]}
 \renewrobustcmd{\bfseries}{\fontseries{b}\selectfont}
-\renewrobustcmd{\boldmath}{}
+
+% make caption font size smaller
 \captionsetup[figure]{font=small,labelfont=small}
+
 
 \title{MapIntel: Enhancing Competitive Intelligence Acquisition Through Embeddings and Visual Analytics}
 \author{David Silva, Fernando Bação}
@@ -169,25 +163,18 @@ We perform hyperparameter tuning using a multi-objective approach to optimize th
 \subsection{Results}
 Our results based on the setup described above are shown in Table \ref{table2}. For each trial, we report the average results and standard deviations over the cross-validation folds. The table contains the best trials for each of the Topic/Embedding model combinations according to the average of the three objective metrics, which we applied MinMax scaling to avoid any impact of the metrics scale on the choice of the best model. We can see that the combination that uses BERTopic and SBERT outperform the others with respect to both NMI and $C_v$ while having a within standard deviation $k$NN Classifier Accuracy to the best value. Another interesting observation is that combinations using SBERT have generally better results. To facilitate results reproduction efforts, we open-sourced the code developed for the experiments at \href{https://github.com/dfhssilva/mapintel_research}{github.com/dfhssilva/mapintel\_research}.
 
-\sisetup{separate-uncertainty}
 \begin{table}[H]
   \centering
-  \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}
-      ll
-      S[detect-weight,mode=text]
-      S[detect-weight,mode=text]
-      S[detect-weight,mode=text]
-      S[detect-weight,mode=text]
-      @{}}
+  \resizebox{0.95\textwidth}{!}{%
+    \begin{tabular}{@{}llYYYY@{}}
       \toprule
-      \textbf{Topic Model} & \textbf{Embedding Model}     & MinMax Average    & NMI                    & Topic Coherence $C_v$   & $k$NN Classifier Accuracy     \\ \midrule
-      BERTopic             & \multicolumn{1}{l|}{Doc2Vec} & 0.499             & 0.105(10)              & 0.721(24)               & 0.157(13)                     \\
-      BERTopic             & \multicolumn{1}{l|}{SBERT}   & \bfseries 0.942   & \bfseries 0.363(33)    & \bfseries 0.759(8)      & 0.359(12)                     \\
-      CTM                  & \multicolumn{1}{l|}{Doc2Vec} & 0.558             & 0.230(17)              & 0.546(16)               & 0.235(29)                     \\
-      CTM                  & \multicolumn{1}{l|}{SBERT}   & 0.704             & 0.329(17)              & 0.576(20)               & 0.277(41)                     \\
-      LDA                  & \multicolumn{1}{l|}{Doc2Vec} & 0.576             & 0.248(28)              & 0.529(29)               & 0.249(14)                     \\
-      LDA                  & \multicolumn{1}{l|}{SBERT}   & 0.71              & 0.261(34)              & 0.531(29)               & \bfseries 0.369(51)           \\ \bottomrule
+      \textbf{Topic Model} & \textbf{Embedding Model}        & {MinMax Average}    & {NMI}                  & {Topic Coherence $C_v$}    & {$k$NN Classifier Accuracy}     \\ \midrule
+      BERTopic             & \multicolumn{1}{l|}{Doc2Vec}    & 0.50                & 0.11(1)                & 0.72(2)                    & 0.16(1)                         \\
+      BERTopic             & \multicolumn{1}{l|}{SBERT}      & \bfseries 0.94      & \bfseries 0.36(3)      & \bfseries 0.76(8)          & 0.36(1)                         \\
+      CTM                  & \multicolumn{1}{l|}{Doc2Vec}    & 0.56                & 0.23(2)                & 0.55(2)                    & 0.24(3)                         \\
+      CTM                  & \multicolumn{1}{l|}{SBERT}      & 0.70                & 0.33(2)                & 0.58(2)                    & 0.28(4)                         \\
+      LDA                  & \multicolumn{1}{l|}{Doc2Vec}    & 0.58                & 0.25(3)                & 0.53(3)                    & 0.25(1)                         \\
+      LDA                  & \multicolumn{1}{l|}{SBERT}      & 0.71                & 0.26(3)                & 0.53(3)                    & \bfseries 0.37(5)               \\ \bottomrule
     \end{tabular}%
   }
   \caption{Hyperparameter tuning best trials per topic and embedding model according to the MinMax average of the multiple objective metrics.}
@@ -315,7 +302,7 @@ Besides the searching and browsing functionality, the system can also organize t
 
 \begin{table}[H]
   \centering
-  \resizebox{0.7\textwidth}{!}{%
+  \resizebox{0.8\textwidth}{!}{%
     \begin{tabular}{@{}Sll@{}}
       \toprule
       \textbf{Topic Number}       & \textbf{Topic Words}                          & \textbf{Topic Coherence}      \\  \midrule
