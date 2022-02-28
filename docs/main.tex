@@ -1,30 +1,25 @@
 \documentclass[a4paper]{article}
 
-\usepackage[english]{babel}
-\usepackage[utf8x]{inputenc}
-\usepackage{amsmath}
-\usepackage{float}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{graphicx}
-\usepackage{multirow}
-\usepackage[authoryear]{natbib}
-\usepackage{hyperref}
-\usepackage{booktabs}
-\usepackage[margin=1in]{geometry}
-\usepackage{pgfplots}
-\usepackage{siunitx,etoolbox}
-\usepackage{tabularx}
-\pgfplotsset{compat=1.12}
+\usepackage[margin=1in]{geometry}  % redefine document margins
+\usepackage[authoryear]{natbib}    % use author-year reference type
+\usepackage{float}                 % improves the interface for defining floating objects
+\usepackage{caption}               % customise the captions in figures and tables
+\usepackage{subcaption}            % similar to caption but for subfigures
+\usepackage{graphicx}              % add optional arguments to \includegraphics
+\usepackage{multirow}              % provide multirow table capability
+\usepackage{hyperref}              % cross-referencing support
+\usepackage{booktabs}              % publication quality tables
+\usepackage{siunitx}               % provide std uncertainty next to means
+\usepackage{tabularx}              % allows text wrapping in table cells
 
-\sisetup{
-  table-align-uncertainty=true,
-  separate-uncertainty=true,
-}
-%% local redefinitions
+% configurations necessary for table2
+\sisetup{table-align-uncertainty,separate-uncertainty}
+\newcolumntype{Y}{S[detect-weight,mode=text]}
 \renewrobustcmd{\bfseries}{\fontseries{b}\selectfont}
-\renewrobustcmd{\boldmath}{}
+
+% make caption font size smaller
 \captionsetup[figure]{font=small,labelfont=small}
+
 
 \title{MapIntel: Enhancing Competitive Intelligence Acquisition Through Embeddings and Visual Analytics}
 \author{David Silva, Fernando Bação}
@@ -34,7 +29,7 @@
 \maketitle
 
 \begin{abstract}
-  Briefly summarize your previous work, goals and objectives, what you have accomplished, and future work. (100 words max) If you have a question, please use the help menu (''?'') on the top bar to search for help or ask us a question.
+Competitive Intelligence allows an organization to keep up with market trends and foresee business opportunities. This practice is mostly performed by analysts scanning for any piece of valuable information in a myriad of dispersed and unstructured sources. Here we present MapIntel, a system for acquiring intelligence from large collections of text data by representing each document as a multidimensional vector that captures its own semantics. The system is designed to handle complex Natural Language queries and visual exploration of the corpus, potentially aiding overburdened analysts in finding meaningful insights to help decision-making. The \emph{searching} module of the system uses a retriever and re-ranker engine that first finds the closest neighbors to the query embedding, and then sifts the results through a cross-encoder model that identifies the most relevant documents. The \emph{browsing} or visualization module also leverages the embeddings by projecting them onto 2 dimensions while preserving the multidimensional landscape, resulting in a map where semantically related documents form topical clusters which we capture using topic modeling. This map aims at promoting a fast overview of the corpus while allowing a more detailed exploration and interactive information encountering process. We evaluate the system and its components on the 20 newsgroups dataset, making use of the semantic document labels provided, and we demonstrate the superiority of Transformer-based components. Finally, we present a prototype of the system in Python and show how some of its features can be used to acquire intelligence from a news article corpus we collected during a period of 8 months.
 \end{abstract}
 
 \section{Introduction}
@@ -47,16 +42,16 @@ Competitive Intelligence analysts are responsible for developing the CI task thr
 Traditionally, the most important sources of CI have been, respectively, news providers, corporate websites, and trade publications \citep{marin2004}. With the advent of the internet, new sources, such as social networks \citet{dey2011}, have emerged, while existing ones have become enriched and easily accessible. Despite the increased availability, CI resources are dispersed through a variety of websites and the underlying data is unstructured and noisy. These characteristics add to the difficulty of the analyst's task and exacerbate the need for tools to support it.
 
 % Describe the background: an overview of the most relevant research that has already been conducted (what has been done and what are the limitations that we intend to explore)
-Various studies have attempted to create systems for exploring and gathering intelligence from large collections of textual data \citep{dey2011, esteva2020, lafia2019, lafia2021a}. These studies have consistently applied Natural Language Processing (NLP) techniques for helping users comprehend large volumes of text without requiring to sift through every document. \citet{dey2011} designs a system for CI that captures data from multiple sources, cleans it, uses NLP to identify and tag the relevant content, stores it, generates consolidated reports, and produces alerts on pre-defined triggers.
+Various studies have attempted to create systems for exploring and gathering intelligence from large collections of textual data \citep{dey2011, esteva2020, lafia2019, lafia2021a, caillou2021}. These studies have consistently applied Natural Language Processing (NLP) techniques for helping users comprehend large volumes of text without requiring to sift through every document. \citet{dey2011} designs a system for CI that captures data from multiple sources, cleans it, uses NLP to identify and tag the relevant content, stores it, generates consolidated reports, and produces alerts on pre-defined triggers.
 
 % Establish your research problem: clarify how your own research fits in and what problem it addresses
-Although the previously mentioned systems have successfully been used for dealing with large amounts of text, insufficient attention has been paid to the exploratory and serendipitous aspects of the analyst's task. Accordingly, we propose an information environment that supports analysts in having stimulating and productive information encounters. Thus, contrarily to previous systems, we center ours around Information Encountering which is defined by \citet{erdelez2020} to encompass "finding interesting, useful or potentially useful information when looking for some other information, not looking for any information in particular, or not looking for information at all". This is achieved by incorporating two types of information acquisition tasks: \emph{searching}, consisting of an information retrieval module that allows ad hoc queries on the entire document collection, giving the user the ability to actively seek information, and \emph{browsing}, consisting of a visualization module that equips the user with tools to actively or passively acquire information through the visual exploration of the document corpus (and its thematic cohorts) in a two-dimensional map. 
+Although the previously mentioned systems have successfully been used for dealing with large amounts of text, insufficient attention has been paid to the exploratory and serendipitous aspects of the analyst's task. Accordingly, we propose an information environment that supports analysts in having stimulating and productive information encounters. Thus, contrarily to previous systems, we center ours around Information Encountering which is defined by \citet{erdelez2020} to encompass "finding interesting, useful or potentially useful information when looking for some other information, not looking for any information in particular, or not looking for information at all". This is achieved by incorporating two types of information acquisition tasks: \emph{searching}, consisting of an information retrieval module that allows \emph{ad hoc} queries on the entire document collection, giving the user the ability to actively seek information, and \emph{browsing}, consisting of a visualization module that equips the user with tools to actively or passively acquire information through the visual exploration of the document corpus (and its thematic cohorts) in a two-dimensional map. 
 
 % Talk about the recent advent of the transformers as a justification for this system and as a distinguishing factor
-With the recent emergence of the Transformer architecture \citep{vaswani2017}, significant improvements were made in several NLP subdomains, having reached state-of-the-art results in a wide range of tasks. This new architecture is based solely on the attention mechanism, providing parallelization capabilities and thus avoiding the sequential nature of existing Recurrence models \citep{hochreiter1997, cho2014}. The attention mechanism allows incorporating information from the input sequence words into the one it is currently being processed, thus providing "context" to the word from the rest of the sequence. Language models like Bidirectional Encoder Representations from Transformers (BERT) \citep{devlin2019} leverage this architecture, making up a large part of the modern NLP landscape by providing an off-the-shelf, powerful way to create state-of-the-art models for a wide range of tasks. The Transformer flexibility, allied to its reduced training times and improved ability to learn long-range relationships between terms in a sequence, make it one of the pillars of modern NLP research and we intend to apply this architecture in our work.
+With the recent emergence of the Transformer architecture \citep{vaswani2017}, significant improvements were made in several NLP subdomains, having reached state-of-the-art results in a wide range of tasks \citep{vaswani2017}. This new architecture is based solely on the attention mechanism, providing parallelization capabilities and thus avoiding the sequential nature of existing Recurrence models \citep{hochreiter1997, cho2014}. The attention mechanism allows incorporating information from the input sequence words into the one it is currently being processed, thus providing "context" to the word from the rest of the sequence. Language models like Bidirectional Encoder Representations from Transformers (BERT) \citep{devlin2019} leverage this architecture, making up a large part of the modern NLP landscape by providing an off-the-shelf, powerful way to create state-of-the-art models for a wide range of tasks. The Transformer flexibility, allied to its reduced training times and improved ability to learn long-range relationships between terms in a sequence, make it one of the pillars of modern NLP research, and we intend to apply this architecture in our work.
 
 % Specify your objective(s): what you intend to find out or express in your paper
-In this paper, we explore Transformer-based models for representing documents as semantic vectors. These vectorial representations are commonly denominated as embeddings and we intend to use them in a CI system as a mechanism for extracting information from environmental data. Furthermore, the system facilitates Information Encountering by incorporating \emph{searching} and \emph{browsing} mechanisms that leverage the document embeddings. We name the proposed system as MapIntel from (Competitive) Intelligence Map.
+In this paper, we explore Transformer-based models for representing documents as semantic vectors. These vectorial representations are commonly denominated as embeddings, and we intend to use them in a CI system as a mechanism for extracting information from environmental data. Furthermore, the system facilitates Information Encountering by incorporating \emph{searching} and \emph{browsing} mechanisms that leverage the document embeddings. We name the proposed system as MapIntel from (Competitive) Intelligence Map.
 
 \section{Related Work}
 % Introduction: The introduction should clearly establish the focus and purpose of the literature review.
@@ -71,7 +66,7 @@ Arguably, the closest system to ours in terms of domain application is \citet{de
 
 We base our \emph{searching} module on the Vector Space Model (VSM) \citep[p.~120-126]{schutze2008}, a common framework in Information Retrieval, consisting of representing a set of documents as vectors in a vector space, while also allowing full-text queries to be represented in the same space. The model then ranks each document in decreasing order of their similarity with the query. The fundamental assumption of the model is that similar documents will be placed close together in the vector space, whereas dissimilar documents will be far away. An application of VSM for medical imaging can be found in \citep{sampathila2020}. They propose a methodology for Content-based Medical Image Retrieval where Magnetic Resonance Imaging (MRI) images are represented using features such as color, shape, and texture, and the \emph{k} items with the smallest euclidean distance to a given query image are retrieved. They report that by using this approach they can classify dementia-affected MRI images with an average precision of 97.5\% and a maximum recall of 95\%, making it an effective way to diagnose new images. \citep{esteva2020} presents a different application of VSM for querying COVID-19 literature. They propose Co-Search, an Information Retrieval system that combines semantic search, question answering, and abstractive summarization. The system uses Sentence-BERT (SBERT) \citep{reimers2019}, a Transformer-based model for representing documents as semantic vectors, combining it with approximate nearest neighbors and cosine similarity to return the relevant results for a query.
 
-A more recent work focusing on the frontier between Computer Graphics and Machine Learning is \emph{Cartolabe} \citet{caillou2021}. \emph{Cartolabe} is a web-based, scalable and efficient system for visualizing and exploring large textual corpora, relying on topic modeling algorithms like LDA \citep{blei2003} and LSA \citep{deerwester1990} to represent documents as vectors of topics and on UMAP \citep{mcinnes2020} to produce a 2-dimensional plane that preserves the original topology and neighborhood of the documents. Additionally, they provide an interactive high-level visualization that allows exploration of the corpus in real-time by offloading most of the computations to the data pre-processing pipeline making the system highly scalable to large collections of documents. We intend to apply the same idea of performing the pre-processing offline to improve the responsiveness of the system and user interaction. Contrarily to \emph{Cartolabe}, we aim to explore Transformer-based embeddings instead of topic vectors due to the novelty aspect of this architecture and the improved results it has shows in multiple benchmarks in other NLP subdomains.
+A more recent work focusing on the frontier between Computer Graphics and Machine Learning is \emph{Cartolabe} \citet{caillou2021}. \emph{Cartolabe} is a web-based, scalable and efficient system for visualizing and exploring large textual corpora, relying on topic modeling algorithms like LDA \citep{blei2003} and LSA \citep{deerwester1990} to represent documents as vectors of topics and on UMAP \citep{mcinnes2020} to produce a 2-dimensional plane that preserves the original topology and neighborhood of the documents. Additionally, they provide an interactive high-level visualization that allows exploration of the corpus in real-time by offloading most of the computations to the data pre-processing pipeline making the system highly scalable to large collections of documents. We intend to apply the same idea of performing the pre-processing offline to improve the responsiveness of the system and user interaction. Contrarily to \emph{Cartolabe}, we aim to explore Transformer-based embeddings instead of topic vectors due to the novelty aspect of this architecture and the improved results it has shown in multiple benchmarks in other NLP subdomains.
 
 \section{MapIntel}
 We propose MapIntel - Figure \ref{system_architecture}, a system that supports the exploration of a document collection while promoting serendipity and satisfying emerging information needs by allowing full-text queries over the entire collection.
@@ -85,7 +80,7 @@ The system is scalable to large amounts of data, is dynamic as it regularly inte
 \end{figure}
 
 \subsection{Indexing} \label{indexing}
-In this work we decided to focus on how NLP and particularly sentence embeddings could help in organizing, exploring, and retrieving text documents in the CI domain. Thus, we don't develop as much the precedent tasks of data collection and pre-processing as we believe they are independent of the system and can be easily integrated with it. Nevertheless, it is important to point out that the quality of the system is extremely reliant on these steps, as if we feed it non-ideal data, we will get non-ideal results. MapIntel is nothing but a set of tools to facilitate the exploration and understanding of a corpus and it will not give useful insights if the data isn't useful itself. 
+In this work we decided to focus on how NLP and particularly sentence embeddings could help in organizing, exploring, and retrieving text documents in the CI domain. Thus, we don't develop as much the precedent tasks of data collection and pre-processing as we believe they are independent of the system and can be easily integrated with it. Nevertheless, it is important to point out that the quality of the system is extremely reliant on these steps, as if we feed it non-ideal data, we will get non-ideal results. MapIntel is nothing but a set of tools to facilitate the exploration and understanding of a corpus, and it will not give useful insights if the data isn't useful itself. 
 
 Once new documents are fed to the system, their respective embeddings are computed. This process is the basis of our work as it allows the encoding of the semantic identity of the document onto a vector of a given dimensionality. This semantic identity describes what is the subject of the document, and it can be used to compare documents between each other i.e. documents with the same subject will be close in the semantic space and vice-versa. We use SBERT \citep{reimers2019}, a derivative of the Transformer-based BERT model, to embed the documents using a pre-trained encoder trained on reducing the distance between queries and relevant results in the MS MARCO dataset \citep{bajaj2018}. This produces vectors of 768 dimensions, which we then reduce to 2 dimensions using the Uniform Manifold Approximation and Projection (UMAP) \citep{mcinnes2020} algorithm. UMAP constructs a topological representation of the high and low dimensional data and its goal is to minimize their cross-entropy, which measures the difference between the two representations, by adjusting the low-dimensional representation. This is another important component of MapIntel as it allows the organization and localization of the entire document collection in a 2-dimensional map, which can be used to explore and interact with the data. We opted to use UMAP over other dimensionality reduction techniques because of its improved map quality, reduction in time required to produce the output map, support for larger data set sizes, and, most importantly, its ability to update the output map with new data without having to rebuild it \citep{mcinnes2020}.
 
@@ -135,7 +130,7 @@ The map provides a means to explore the documents and the different semantic coh
 \end{figure}
 
 \section{Evaluation}
-Our methodology addresses the issues of information dispersion and overload impacting the CI analysts' task. The proposed system provides searching and browsing capabilities, contributing to an easier understanding of the business environment by supporting analysts in seeking specific information, while promoting undirected information encountering. In this section, we elaborate our choices in the design of the MapIntel system with the results of our experiments and analyse the different components of the system individually.
+Our methodology addresses the issues of information dispersion and overload impacting the CI analysts' task. The proposed system provides searching and browsing capabilities, contributing to an easier understanding of the business environment by supporting analysts in seeking specific information, while promoting undirected information encountering. In this section, we elaborate our choices in the design of the MapIntel system with the results of our experiments and analyze the different components of the system individually.
 
 \subsection{Experimental Setup}
 We evaluate our system quantitatively using the 20 newsgroups \citep{pedregosa2011} dataset and the document labels provided. This dataset consists of around 18,000 newsgroups posts on 20 topics divided into 6 main groups: "Computer", "Recreation", "Science", "Miscellaneous", "Politics" and "Religion". We opted to use this dataset because of the presence of labels that describe the semantic meaning of each document, allowing us to have a reference which we can compare the identified topics with.
@@ -166,27 +161,20 @@ We use three main metrics to guide our model comparison:
 We perform hyperparameter tuning using a multi-objective approach to optimize the three metrics specified previously. We use the Tree-structured Parzen Estimator (TPE) algorithm \citep{bergstra2011, ozaki2020} for sampling the hyperparameter space at each trial $t$ of the optimization process. Contrarily to random search, TPE samples values $x_t^\alpha$ for each hyperparameter $\alpha$ by fitting one Gaussian Mixture Model (GMM) $l(x^\alpha)$ to the set of values associated with the best objective scores in past observed trials, and another GMM $g(x^\alpha)$ to the remaining values. It then chooses the hyperparameter value $x_t^\alpha$ drawn from $l(x^\alpha)$ that maximizes the ratio $\frac{l(x^\alpha)}{g(x^\alpha)}$. For each trial, we evaluate the sampled hyperparameters using a 5-fold cross-validation approach where the folds preserve the percentage of samples of each class. In total, 100 trials were evaluated.
 
 \subsection{Results}
-Our results based on the setup described above are shown in Table \ref{table2}. For each trial, we report the average results and standard deviations over the cross-validation folds. The table contains the best trials for each of the Topic/Embedding model combinations according to the average of the three objective metrics, which we applied MinMax scaling to avoid any impact of the metrics scale on the choice of the best model. We can see that the combination that uses BERTopic and SBERT outperform the others with respect to both NMI and $C_v$ while having a within standard deviation $k$NN Classifier Accuracy to the best value. Another interesting observation is that combinations using SBERT have generally better results. To facilitate results reproduction efforts, we open-sourced the code developed for the experiments at \href{https://github.com/dfhssilva/mapintel_research}{github.com/dfhssilva/mapintel\_research}.
+Our results based on the setup described above are shown in Table \ref{table2}. For each trial, we report the average results and standard deviations over the cross-validation folds. The table contains the best trials for each of the Topic/Embedding model combinations according to the average of the three objective metrics, which we applied MinMax scaling to avoid any impact of the metrics scale on the choice of the best model. We can see that the combination that uses BERTopic and SBERT outperform the others with respect to both NMI and $C_v$ while having a within standard deviation $k$NN Classifier Accuracy to the best value. Another interesting observation is that combinations using SBERT have generally better results. To facilitate results reproduction efforts, we open-sourced the code developed for the experiments at \href{https://github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel_research}{github.com/NOVA-IMS-Innovation-and-Analytics-Lab/mapintel\_research}.
 
-\sisetup{separate-uncertainty}
 \begin{table}[H]
   \centering
-  \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}
-      ll
-      S[detect-weight,mode=text]
-      S[detect-weight,mode=text]
-      S[detect-weight,mode=text]
-      S[detect-weight,mode=text]
-      @{}}
+  \resizebox{0.95\textwidth}{!}{%
+    \begin{tabular}{@{}llYYYY@{}}
       \toprule
-      \textbf{Topic Model} & \textbf{Embedding Model}     & MinMax Average    & NMI                    & Topic Coherence $C_v$   & $k$NN Classifier Accuracy     \\ \midrule
-      BERTopic             & \multicolumn{1}{l|}{Doc2Vec} & 0.499             & 0.105(10)              & 0.721(24)               & 0.157(13)                     \\
-      BERTopic             & \multicolumn{1}{l|}{SBERT}   & \bfseries 0.942   & \bfseries 0.363(33)    & \bfseries 0.759(8)      & 0.359(12)                     \\
-      CTM                  & \multicolumn{1}{l|}{Doc2Vec} & 0.558             & 0.230(17)              & 0.546(16)               & 0.235(29)                     \\
-      CTM                  & \multicolumn{1}{l|}{SBERT}   & 0.704             & 0.329(17)              & 0.576(20)               & 0.277(41)                     \\
-      LDA                  & \multicolumn{1}{l|}{Doc2Vec} & 0.576             & 0.248(28)              & 0.529(29)               & 0.249(14)                     \\
-      LDA                  & \multicolumn{1}{l|}{SBERT}   & 0.71              & 0.261(34)              & 0.531(29)               & \bfseries 0.369(51)           \\ \bottomrule
+      \textbf{Topic Model} & \textbf{Embedding Model}        & {MinMax Average}    & {NMI}                  & {Topic Coherence $C_v$}    & {$k$NN Classifier Accuracy}     \\ \midrule
+      BERTopic             & \multicolumn{1}{l|}{Doc2Vec}    & 0.50                & 0.11(1)                & 0.72(2)                    & 0.16(1)                         \\
+      BERTopic             & \multicolumn{1}{l|}{SBERT}      & \bfseries 0.94      & \bfseries 0.36(3)      & \bfseries 0.76(8)          & 0.36(1)                         \\
+      CTM                  & \multicolumn{1}{l|}{Doc2Vec}    & 0.56                & 0.23(2)                & 0.55(2)                    & 0.24(3)                         \\
+      CTM                  & \multicolumn{1}{l|}{SBERT}      & 0.70                & 0.33(2)                & 0.58(2)                    & 0.28(4)                         \\
+      LDA                  & \multicolumn{1}{l|}{Doc2Vec}    & 0.58                & 0.25(3)                & 0.53(3)                    & 0.25(1)                         \\
+      LDA                  & \multicolumn{1}{l|}{SBERT}      & 0.71                & 0.26(3)                & 0.53(3)                    & \bfseries 0.37(5)               \\ \bottomrule
     \end{tabular}%
   }
   \caption{Hyperparameter tuning best trials per topic and embedding model according to the MinMax average of the multiple objective metrics.}
@@ -236,7 +224,7 @@ An important characteristic of BERTopic is that it is able to identify noise, le
 \section{Case Study}
 This use case is based on a real-world example, related with the recurrent tasks that the intelligence analysts at AICEP - Portuguese Trade \& Investment Agency have to perform. AICEP “is a government business entity, focused in encouraging the best competitive foreign companies to invest in Portugal and in contributing to the success of Portuguese companies abroad in their internationalization processes or export activities.” Given this mandate AICEP needs to monitor the world news and make sure it is updated with world events. Additionally, analysts at AICEP are called upon to produce reports on specific markets and industries, in order to guide the Portuguese state's diplomatic efforts and private company investments. These reports are pre-formatted, however the use and integration of text data remains a challenge. This is unfortunate as recent news and text documents allows a more detailed understanding of specific problems and nuances that are difficult to capture in an alphanumeric data table. The objective of this use case is to show how MapIntel can be used to mitigate this limitation and allow the inclusion of relevant text data in the report.
 
-In this case study we will show a step-by-step process of how the CI analyst can use MapIntel to screen the news and select those that are relevant to include in the reports. This process cannot be seen strictly as an information retrieval process, in fact it is much more an exploration process, in which the analyst's criterion plays a crucial role. The process starts with a set of keywords that the analyst selects based on his/her knowledge of the market or industry. These keywords are going to be used as seeds in the process of exploring the corpora. Each seed will be projected onto the two-dimensional surface produced by MapIntel, defining a set of neighbors in this semantic space, thus generating a number of candidate documents relevant for the report.
+In this case study, we will show the most important tools that the MapIntel system offers to explore and select relevant documents to include in a market or industry report. These tools allow the analyst to screen the news and select those that are relevant to include in the report. This process cannot be strictly seen as an information retrieval process, in fact it is much more an exploration process, in which the analyst’s criterion plays a crucial role. The process usually starts with a natural language query that the analyst defines based on his/her knowledge of the market or industry. The query is used by the system as the seed in the process of exploring the corpora. The query is projected onto the two-dimensional surface produced by MapIntel, and the neighbor documents are defined in the semantic space, thus generating a number of candidate results relevant for the report. From this starting position the analyst can interact visually with the results and the entire corpus, and guide his/her interest with successive queries, focusing in the most interesting/promising instances to include in the report.
 
 To evaluate the MapIntel system with real data, we gathered news articles from multiple international sources with the use of an API\footnote{\href{https://newsapi.org/}{newsapi.org}}. As already stated, there are multiple sources of CI, and different information can be obtained from these. \citet{dey2011} shows in Table \ref{ci_sources} what kind of information can be acquired from these sources, particularly the ones that are easily available through the web. We decided to work mainly with news articles as they provide a general and accessible means of information about the environment, however, our methodology is easily extensible to data from different sources. 
 
@@ -257,11 +245,11 @@ To evaluate the MapIntel system with real data, we gathered news articles from m
   \label{ci_sources}
 \end{table}
 
-The API employed retrieves news articles and their metadata, including attributes such as source, author, title, description, content, category, URL, and publication date and time. We used this API to feed the system with updated data on a schedule while focusing on articles written in English from a set of predefined categories (business, entertainment, general, health, science, sports, technology). The system was fed with a total of 334,925 articles during the period between October, 2020 and June, 2021. 
+The API employed retrieves news articles and their metadata, including attributes such as source, author, title, description, content, category, URL, and publication date and time. We used this API to feed the system with updated data on a schedule while focusing on articles written in English from a set of predefined categories (business, entertainment, general, health, science, sports, technology). The system was fed with a total of 334,925 articles during the period between October 2020 and June 2021. 
 
 Due to API limitations, the retrieved data has its content truncated to 200 characters. To overcome this, we treat a single document unit as the concatenation of title, description, and content, providing us a semantically loaded piece of text that we can use for testing the system. Despite this limitation, we give the user the possibility of accessing the full article through its URL. We ensure that each document is unique, is written in English, and doesn't have any HTML tags or any strange pattern.
 
-Once the data is cleaned, it follows the Indexing pipeline \ref{indexing_pipeline} so it can be used downstream by the Query pipeline \ref{query_pipeline} and the Visualization pipeline \ref{vis_pipeline}. 
+Once the data is cleaned, it follows the Indexing pipeline \ref{indexing_pipeline}, so it can be used downstream by the Query pipeline \ref{query_pipeline} and the Visualization pipeline \ref{vis_pipeline}. 
 
 \begin{figure}[H]
   \centering
@@ -278,7 +266,7 @@ The app enables information searching by receiving a query through the search bo
 
 \begin{table}[H]
   \centering
-  \resizebox{0.85\textwidth}{!}{%
+  \resizebox{0.9\textwidth}{!}{%
     \begin{tabularx}{\linewidth}{lXl}
       \toprule
       \textbf{Query}                            & \textbf{Top 3 Results (Title)}                                                                                 & \textbf{Score}  \\  \midrule
@@ -296,7 +284,7 @@ The app enables information searching by receiving a query through the search bo
                                                 & News24.com | Myanmar military stages coup and declares state of emergency, detains leader Aung San Suu Kyi.    & 7.94            \\  \bottomrule
     \end{tabularx}%
   }
-  \caption{Example queries and their top 3 results and respective scores. The results are computed according to the methodology described in \ref{query} and the scores range between 0 and 1.}
+  \caption{Example queries and their top 3 results and respective relevancy scores. The results are computed according to the methodology described in \ref{query}.}
   \label{query_results}
 \end{table}
 
@@ -314,7 +302,7 @@ Besides the searching and browsing functionality, the system can also organize t
 
 \begin{table}[H]
   \centering
-  \resizebox{0.7\textwidth}{!}{%
+  \resizebox{0.8\textwidth}{!}{%
     \begin{tabular}{@{}Sll@{}}
       \toprule
       \textbf{Topic Number}       & \textbf{Topic Words}                          & \textbf{Topic Coherence}      \\  \midrule
@@ -345,10 +333,10 @@ Besides the searching and browsing functionality, the system can also organize t
   \label{topic_labels}
 \end{table}
 
-\section{Conclusion and Perspectives}
-In this paper, we present MapIntel, a new system for extracting knowledge from large corpora of text documents. MapIntel differentiates from previous similar systems in that it leverages Transformer-based document embeddings to provide efficient, natural language searching of documents, a 2-dimensional map of the documents, and a topical organization of the corpus. The system is centered around the concept of Information Encountering \citet{erdelez2020}, providing \emph{browsing} and \emph{searching} capabilities to acquire information and promote serendipity. MapIntel is aimed at supporting Competitive Intelligence analysts by providing a tool that facilitates the exploration and monitoring of the competitive environment from textual data.
+\section{Conclusion}
+In this paper, we present MapIntel, a new system for extracting knowledge from large corpora of text documents. MapIntel differentiates from previous systems in that it leverages Transformer-based document embeddings to provide efficient, natural language searching of documents. The use of Transformer-based embeddings allows to harness the semantic attributes of the documents, which can then be explored in a 2-dimensional map, produced using UMAP. Additionally, MapIntel also organizes the documents in topical cohorts, providing yet another framework for the interaction of the user with the corpus. The system is centered around the concept of Information Encountering \citet{erdelez2020}, providing \emph{browsing} and \emph{searching} capabilities to acquire information and promote serendipity. MapIntel is aimed at supporting Competitive Intelligence analysts by providing a tool that facilitates the exploration and monitoring of the competitive environment from textual data.
 
-We detailed the methodology proposed, having evaluated it through a well-defined experimental setup. Furthermore, we showed how the MapIntel system can be used in a real-world case and we developed a web application, applying the proposed methodology, while enhancing the interaction with the underlying data through an interactive scatter plot. Finally, we developed and open-sourced the code base of the web application and our experiments so the work can be easily reproducible and continued.
+We detailed the methodology proposed, having evaluated it through a well-defined experimental setup. Furthermore, we showed how the MapIntel system can be used in a real-world case and we developed a web application, applying the proposed methodology, while enhancing the interaction with the underlying data through an interactive scatter plot. Finally, we developed and open-sourced the code base of the web application and our experiments, so the work can be easily reproducible and continued.
 
 Our next steps will be to perform a more extensive evaluation of the system with new corpora and develop a case study more closely with CI analysts from AICEP to better understand their needs. Some different directions would be to expand the system to different application domains to test its generality, include multilingual text documents to more easily monitor international events, and provide a way to interact with subsets of documents through manual selection in the interactive map. 
 
