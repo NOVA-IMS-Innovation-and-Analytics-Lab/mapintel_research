@@ -82,9 +82,9 @@ The system is scalable to large amounts of data, is dynamic as it regularly inte
 \subsection{Indexing} \label{indexing}
 In this work we decided to focus on how NLP, particularly sentence embeddings, could help organize, explore, and retrieve text documents in the CI domain. Thus, we have not developed the precedent tasks of data collection and pre-processing as much as we believe they are independent of the system and can be easily integrated with it. Nevertheless, it is essential to point out that the system's quality is extremely reliant on these steps, as if we feed it non-ideal data, we will get non-ideal results. MapIntel is nothing but a set of tools to facilitate the exploration and understanding of a corpus, and it will not give useful insights if the data is not useful itself.
 
-Once new documents are fed to the system, their respective embeddings are computed. This process is the basis of our work as it allows the encoding of the semantic identity of the document onto a vector of a given dimensionality. This semantic identity describes the subject of the document, and can be used to compare documents between each other i.e., documents with the same subject will be close in the semantic space and vice-versa. We used SBERT \citep{reimers2019}, a derivative of the Transformer-based BERT model, to embed the documents using a pre-trained encoder trained on reducing the distance between queries and relevant results in the MS MARCO dataset \citep{bajaj2018}. This step produced vectors of 768 dimensions, which we then reduced to 2 dimensions using the Uniform Manifold Approximation and Projection (UMAP) \citep{mcinnes2020} algorithm. UMAP constructs a topological representation of the high and low dimensional data. Its goal is to minimize their cross-entropy, which measures the difference between the two representations, by adjusting the low-dimensional representation. This aspect is another crucial component of MapIntel as it allows the organization and localization of the entire document collection in a 2-dimensional map, which can be used to explore and interact with the data. We opted to use UMAP over other dimensionality reduction techniques because of its improved map quality, reduction in time required to produce the output map, support for larger data set sizes, and, most importantly, its ability to update the output map with new data without having to rebuild it \citep{mcinnes2020}.
+Once new documents are fed to the system, their respective embeddings are computed. This process is the basis of our work as it allows the encoding of the semantic identity of the document onto a vector of a given dimensionality. This semantic identity describes the subject of the document, and can be used to compare documents between each other \textit{i.e.}, documents with the same subject will be close in the semantic space and vice-versa. We used SBERT \citep{reimers2019}, a derivative of the Transformer-based BERT model, to embed the documents using a pre-trained encoder trained on reducing the distance between queries and relevant results in the MS MARCO dataset \citep{bajaj2018}. This step produced vectors of 768 dimensions, which we then reduced to 2 dimensions using the Uniform Manifold Approximation and Projection (UMAP) \citep{mcinnes2020} algorithm. UMAP constructs a topological representation of the high and low dimensional data. Its goal is to minimize their cross-entropy, which measures the difference between the two representations, by adjusting the low-dimensional representation. This aspect is another crucial component of MapIntel as it allows the organization and localization of the entire document collection in a 2-dimensional map, which can be used to explore and interact with the data. We opted to use UMAP over other dimensionality reduction techniques because of its improved map quality, reduction in time required to produce the output map, support for larger data set sizes, and, most importantly, its ability to update the output map with new data without having to rebuild it \citep{mcinnes2020}.
 
-We also applied a topic modeling technique called BERTopic \citep{grootendorst2020}, based on the work of \citet{angelov2020}. Topic modeling unveils the latent semantic structure of the data and unlike some of the classical techniques such as Latent Dirichlet Allocation \citep{blei2003} and Probabilistic Latent Semantic Indexing \citep{hofmann1999}, BERTopic leverages the SBERT embeddings and their capacity to encode the semantic attributes of a document to find the most representative topics of a corpus. BERTopic clusters the documents using Hierarchical Density-Based Spatial Clustering of Applications with Noise (HDBSCAN) \citep{mcinnes2017} to find the densest areas of the semantic space while identifying outliers. To overcome the sparsity of the high-dimensional space and the obstacles it creates in finding dense clusters, UMAP is used to reduce the embeddings to a lower dimension (5 dimensions by default) prior to the clustering stage. The primary assumption behind BERTopic is that each dense area in the semantic space is generated by a latent topic shared among the documents that comprise it. Finally, a class-based variant of TF-IDF \citep{jones1972} (c-TF-IDF) is used to extract an importance value of each word for each cluster, which can be used to represent each topic as the set of its most important words. Another advantage of BERTopic over the classical approaches is that we can reduce the number of topics obtained by iteratively comparing the c-TF-IDF vectors, merging the least common topic with its most similar topic, and re-calculate the c-TF-IDF vectors, giving us the option to choose the number of topics.
+We also applied a topic modeling technique called BERTopic \citep{grootendorst2020}, based on the work of \citet{angelov2020}. Topic modeling unveils the latent semantic structure of the data and unlike some of the classical techniques such as Latent Dirichlet Allocation \citep{blei2003} and Probabilistic Latent Semantic Indexing \citep{hofmann1999}, BERTopic leverages the SBERT embeddings and their capacity to encode the semantic attributes of a document to find the most representative topics of a corpus. BERTopic clusters the documents using Hierarchical Density-Based Spatial Clustering of Applications with Noise (HDBSCAN) \citep{mcinnes2017} to find the densest areas of the semantic space while identifying outliers. To overcome the sparsity of the high-dimensional space and the obstacles it creates in finding dense clusters, UMAP is used to reduce the embeddings to a lower dimension (5 dimensions by default) prior to the clustering stage, this UMAP is separate from the one we use to visualize the corpus on 2 dimensions. The primary assumption behind BERTopic is that each dense area in the semantic space is generated by a latent topic shared among the documents that comprise it. Finally, a class-based variant of TF-IDF \citep{jones1972} (c-TF-IDF) is used to extract an importance value of each word for each cluster, which can be used to represent each topic as the set of its most important words. Another advantage of BERTopic over the classical approaches is that we can reduce the number of topics obtained by iteratively comparing the c-TF-IDF vectors, merging the least common topic with its most similar topic, and re-calculate the c-TF-IDF vectors, giving us the option to choose the number of topics.
 
 Finally, we loaded the documents including their metadata, SBERT embeddings, UMAP embeddings, and topics into a database. We used Open Distro for Elasticsearch\footnote{\href{https://opendistro.github.io/for-elasticsearch/}{opendistro.github.io/for-elasticsearch}} — an open-source, RESTful, distributed search and analytics engine based on Apache Lucene\footnote{\href{https://lucene.apache.org/}{lucene.apache.org}} — to store the data, organize it in an index, and perform full-text search on it. We can think of the described approach as an Indexing Pipeline — Figure \ref{indexing_pipeline} — that extracts new raw documents from a data source, pre-processes and manipulates them, stores the results in a database, and indexes the documents for future search tasks.
 
@@ -98,7 +98,7 @@ Finally, we loaded the documents including their metadata, SBERT embeddings, UMA
 \subsection{Query} \label{query}
 Finding meaningful information within a large amount of data is a sizable part of the CI task. The ability to retrieve relevant documents from a large collection of news articles through natural language queries empowers the CI analyst with an easy and intuitive interface to scan the environment.
 
-MapIntel provides a search functionality based on Open Distro for Elasticsearch and its $k$-Nearest Neighbor ($k$NN) Search module. By utilizing the $k$NN module, we can leverage the SBERT embeddings by projecting the query string onto the same semantic space as the corpus and computing its $k$-nearest neighbors i.e. finding the $k$ documents whose embedding vectors are closest to the query embedding vector, according to some predefined similarity metric. Since the embedding vectors encode the semantic identity of each document, this method provides semantically relevant results for a given query. Furthermore, the $k$NN module delivers a highly performant and scalable similarity search engine by leveraging Elasticsearch’s distributed architecture and by implementing Approximate Nearest Neighbors (ANN) search based on Hierarchical Navigable Small World Graphs \citep{malkov2018}. The $k$NN module can also be combined with binary filters that help the user obtain focused results based on characteristics of the documents such as publication date and topic. These filters are applied directly to the database, reducing the search space as a result and improving the subsequent search time.
+MapIntel provides a search functionality based on Open Distro for Elasticsearch and its $k$-Nearest Neighbor ($k$NN) Search module. By utilizing the $k$NN module, we can leverage the SBERT embeddings by projecting the query string onto the same semantic space as the corpus and computing its $k$-nearest neighbors \textit{i.e.} finding the $k$ documents whose embedding vectors are closest to the query embedding vector, according to some predefined similarity metric. Since the embedding vectors encode the semantic identity of each document, this method provides semantically relevant results for a given query. Furthermore, the $k$NN module delivers a highly performant and scalable similarity search engine by leveraging Elasticsearch’s distributed architecture and by implementing Approximate Nearest Neighbors (ANN) search based on Hierarchical Navigable Small World Graphs \citep{malkov2018}. The $k$NN module can also be combined with binary filters that help the user obtain focused results based on characteristics of the documents such as publication date and topic. These filters are applied directly to the database, reducing the search space as a result and improving the subsequent search time.
 
 Once again, we can think of the search functionality as a pipeline, illustrated in Figure \ref{query_pipeline}, where we feed a query string and some binary filters, and obtain documents ordered by their relevance to the query. We employ a Retrieve and Re-rank pipeline based on the works of \citet{nogueira2020a, kratzwald2019} composed by a "Retrieval Bi-Encoder + ANN" node that performs a semantic search using Elasticsearch’s $k$NN module as described above, and by a "Re-Ranker Cross-Encoder" node consisting of a BERT model fine-tuned on the MS MARCO dataset that receives a document and query pair as input and predicts the probability of the document being relevant to the query.
 
@@ -181,18 +181,18 @@ Our results based on the setup described above are shown in Table \ref{table2}. 
 	\label{table2}
 \end{table}
 
-Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 newsgroups dataset. Figure \ref{umap_train_plots} shows the comparison between the distribution of the original labels and the topics assigned by the best performing model according to the MinMax average score for the train data. Likewise, Figure \ref{umap_test_plots} shows the same comparison for the test data and demonstrates the ability of the model to generalize to unseen samples. We can see that the identified topical cohorts are mostly matching with the original groups, indicating that the embeddings have learned the original labels in a fully unsupervised way. Additionally, it is possible to see that semantically similar topics are located close to each other in the map. This is the case of all the computation related topics such as \emph{window.server.windows.motif.display} and \emph{format.files.graphics.file.gif}. Finally, there is also an agreement between the topic meaning given by the top 5 words describing the topics and the original label description. For example, the same points that have the label \emph{sci.space} also have the topic \emph{space.launch.nasa.orbit.shuttle}. Figure \ref{umap_train_plots_zoom} in the appendix shows how much correspondence there is both in terms of labels and positioning for technological-related documents - we can see how the distribution of the original label \emph{comp.graphics} matches the distribution of the topic \emph{format.files.graphics.file.gif}, likewise \emph{comp.windows.x} matches \emph{window.server.windows.motif.display}, and \emph{sci.electronics} matches \emph{amp.radio.powed.voltage.use}, whereas the remaining original labels are lost, giving birth to new, and more semantically coherent, groups of documents (note how the distribution of the original label \emph{comp.sys.ibm.pc.hardware} is very dispersed, even overlapping with other groups and how the distribution of the topics occupying the same region is very clear and compact).
+Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 newsgroups dataset. Figure \ref{umap_train_plots} shows the comparison between the distribution of the original labels and the topics assigned by the best performing model according to the MinMax average score for the train data (see Table \ref{best_hyperparameters} for exact hyperparameter values). Likewise, Figure \ref{umap_test_plots} shows the same comparison for the test data and demonstrates the ability of the model to generalize to unseen samples. We can see that the identified topical cohorts are mostly matching with the original groups, indicating that the embeddings have learned the original labels in a fully unsupervised way. Additionally, it is possible to see that semantically similar topics are located close to each other in the map. This is the case of all the computation related topics such as \emph{window.server.windows.motif.display} and \emph{format.files.graphics.file.gif}. Finally, there is also an agreement between the topic meaning given by the top 5 words describing the topics and the original label description. For example, the same points that have the label \emph{sci.space} also have the topic \emph{space.launch.nasa.orbit.shuttle}. Figure \ref{umap_train_plots_zoom} in the appendix shows how much correspondence there is both in terms of labels and positioning for technological-related documents - we can see how the distribution of the original label \emph{comp.graphics} matches the distribution of the topic \emph{format.files.graphics.file.gif}, likewise \emph{comp.windows.x} matches \emph{window.server.windows.motif.display}, and \emph{sci.electronics} matches \emph{amp.radio.powed.voltage.use}, whereas the remaining original labels are lost, giving birth to new, and more semantically coherent, groups of documents (note how the distribution of the original label \emph{comp.sys.ibm.pc.hardware} is very dispersed, even overlapping with other groups and how the distribution of the topics occupying the same region is very clear and compact).
 
 \begin{figure}[H]
 	\centering
 	\resizebox{\textwidth}{!}{%
-		\begin{subfigure}[b]{0.44\linewidth}
-			\includegraphics[width=\linewidth]{./assets/orig_umap_train_plot}
+		\begin{subfigure}[b]{0.45\linewidth}
+			\includegraphics[width=\linewidth]{./assets/orig_umap_train_plot_labels}
 			\caption{Original labels}
 			\label{umap_train_plots:a}
 		\end{subfigure}
-		\begin{subfigure}[b]{0.5\linewidth}
-			\includegraphics[width=\linewidth]{./assets/top_umap_train_plot}
+		\begin{subfigure}[b]{0.45\linewidth}
+			\includegraphics[width=\linewidth]{./assets/top_umap_train_plot_labels}
 			\caption{Topic labels}
 			\label{umap_train_plots:b}
 		\end{subfigure}
@@ -204,13 +204,13 @@ Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 
 \begin{figure}[H]
 	\centering
 	\resizebox{\textwidth}{!}{%
-		\begin{subfigure}[b]{0.44\linewidth}
-			\includegraphics[width=\linewidth]{./assets/orig_umap_test_plot}
+		\begin{subfigure}[b]{0.45\linewidth}
+			\includegraphics[width=\linewidth]{./assets/orig_umap_test_plot_labels}
 			\caption{Original labels}
 			\label{umap_test_plots:a}
 		\end{subfigure}
-		\begin{subfigure}[b]{0.5\linewidth}
-			\includegraphics[width=\linewidth]{./assets/top_umap_test_plot}
+		\begin{subfigure}[b]{0.45\linewidth}
+			\includegraphics[width=\linewidth]{./assets/top_umap_test_plot_labels}
 			\caption{Topic labels}
 			\label{umap_test_plots:b}
 		\end{subfigure}
@@ -219,7 +219,7 @@ Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 
 	\label{umap_test_plots}
 \end{figure}
 
-An important characteristic of BERTopic is that it is able to identify noise, leading to a topic assignment where a portion of the observation are classified as outliers. This produces a cleaner map to explore the documents at the loss of samples that are not given a topic. In Figure \ref{umap_train_plots:b} the percentage of documents classified into the aforementioned category is 51.4\%.
+An important characteristic of BERTopic is that it is able to identify noise, leading to a topic assignment where a portion of the observation are classified as outliers. This produces a cleaner map to explore the documents at the loss of samples that are not given a topic. In Figure \ref{umap_train_plots:b} the percentage of documents classified into the aforementioned category is 51.4\% - these are the light grey points scattered across the map.
 
 \section{Case Study}
 This use case is based on a real-world example, related to the recurrent tasks that the intelligence analysts at AICEP - Portuguese Trade \& Investment Agency have to perform. AICEP “is a government business entity, focused in encouraging the best competitive foreign companies to invest in Portugal and in contributing to the success of Portuguese companies abroad in their internationalization processes or export activities.” Given this mandate AICEP needs to monitor the world news and make sure it is updated with world events. Additionally, analysts at AICEP are called upon to produce reports on specific markets and industries, in order to guide the Portuguese state's diplomatic efforts and private company investments. These reports are pre-formatted, however the use and integration of text data remains a challenge. This is unfortunate as recent news and text documents allow a more detailed understanding of specific problems and nuances that are difficult to capture in an alphanumeric data table. The objective of this use case is to show how MapIntel can be used to mitigate this limitation and allow the inclusion of relevant text data in the report.
@@ -351,13 +351,13 @@ This work was supported by the \emph{Fundação para a Ciência e Tecnologia of 
 \begin{figure}[H]
 	\centering
 	\resizebox{\textwidth}{!}{%
-		\begin{subfigure}[b]{0.44\linewidth}
-			\includegraphics[width=\linewidth]{./assets/orig_umap_train_plot_zoom}
+		\begin{subfigure}[b]{0.45\linewidth}
+			\includegraphics[width=\linewidth]{./assets/orig_umap_train_plot_zoom_labels}
 			\caption{Original labels}
 			\label{umap_test_plots:a}
 		\end{subfigure}
-		\begin{subfigure}[b]{0.47\linewidth}
-			\includegraphics[width=\linewidth]{./assets/top_umap_train_plot_zoom}
+		\begin{subfigure}[b]{0.45\linewidth}
+			\includegraphics[width=\linewidth]{./assets/top_umap_train_plot_zoom_labels}
 			\caption{Topic labels}
 			\label{umap_test_plots:b}
 		\end{subfigure}
@@ -365,5 +365,27 @@ This work was supported by the \emph{Fundação para a Ciência e Tecnologia of 
 	\caption{Zoom on technological region of UMAP. Comparison between UMAP planes of \textbf{train data} with original (a) and topic labels (b).}
 	\label{umap_train_plots_zoom}
 \end{figure}
+
+\section{Best hyperparameter configuration}
+\begin{table}[H]
+	\centering
+	\resizebox{0.95\textwidth}{!}{%
+		\begin{tabular}{lll}
+			\toprule
+			\textbf{Model} & \textbf{Hyperparameter}     & \textbf{Value}                                   \\ \midrule
+			-              & embedding\_model            & sentence-transformers/msmarco-distilbert-base-v4 \\
+			-              & topic\_model                & BERTopic                                         \\
+			HDBSCAN        & cluster\_selection\_epsilon & 0.05516517617078291                              \\
+			HDBSCAN        & cluster\_selection\_method  & leaf                                             \\
+			HDBSCAN        & min\_cluster\_size          & 110                                              \\
+			BERTopic       & min\_topic\_size            & 33                                               \\
+			UMAP           & metric                      & cosine                                           \\
+			UMAP           & n\_components               & 10                                               \\
+			UMAP           & n\_neighbors                & 14                                               \\ \bottomrule
+		\end{tabular}%
+	}
+	\caption{Hyperparameter values with the highest MinMax average of NMI, Topic Coherence $C_v$, and $k$NN Classifier Accuracy for training data according to Table \ref{table2}.}
+	\label{best_hyperparameters}
+\end{table}
 
 \end{document}
