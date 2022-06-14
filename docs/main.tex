@@ -74,7 +74,7 @@ The system is scalable to large amounts of data, is dynamic as it regularly inte
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.5]{./assets/system_architecture}
+	\includegraphics[width=\linewidth]{./assets/system_architecture}
 	\caption{\textbf{MapIntel architecture}. Composed of three main pipelines: Indexing, Query, and Visualization}
 	\label{system_architecture}
 \end{figure}
@@ -90,7 +90,7 @@ Finally, we loaded the documents including their metadata, SBERT embeddings, UMA
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.7]{./assets/indexing_pipeline}
+	\includegraphics[width=\linewidth]{./assets/indexing_pipeline}
 	\caption{\textbf{Indexing pipeline}. Documents flow through a pre-processing step, followed by an inference step where their SBERT embeddings, UMAP embeddings and BERTopic topics are computed and indexed into a Database for future search tasks.}
 	\label{indexing_pipeline}
 \end{figure}
@@ -108,7 +108,7 @@ With this pipeline, we can provide relevant documents to the user given a query 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.7]{./assets/query_pipeline}
+	\includegraphics[width=\linewidth]{./assets/query_pipeline}
 	\caption{\textbf{Query pipeline}. Given a user query or selected document, its SBERT embedding is inferred and the closest neighbors are computed while a set of binary filters is used to reduce the search space. Following, a Cross-Encoder BERT model is used to re-score the neighbors from the previous step, and they are retrieved together with their similarity score.}
 	\label{query_pipeline}
 \end{figure}
@@ -124,7 +124,7 @@ The map provides a means to explore the documents and the different semantic coh
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.7]{./assets/vis_pipeline}
+	\includegraphics[width=\linewidth]{./assets/vis_pipeline}
 	\caption{\textbf{Visualization pipeline}. Given a user query or selected document, its SBERT and UMAP embedding are inferred while a set of binary filters and a sample size is used to reduce the number of documents retrieved. Finally, the selected documents' topics and 2-dimensional embeddings, together with the query embedding, are displayed in an interactive scatter plot.}
 	\label{vis_pipeline}
 \end{figure}
@@ -185,41 +185,19 @@ Additionally, we present the UMAP 2-dimensional maps of the documents in the 20 
 
 \begin{figure}[H]
 	\centering
-	\resizebox{\textwidth}{!}{%
-		\begin{subfigure}[b]{0.45\linewidth}
-			\includegraphics[width=\linewidth]{./assets/orig_umap_train_plot_labels}
-			\caption{Original labels}
-			\label{umap_train_plots:a}
-		\end{subfigure}
-		\begin{subfigure}[b]{0.45\linewidth}
-			\includegraphics[width=\linewidth]{./assets/top_umap_train_plot_labels}
-			\caption{Topic labels}
-			\label{umap_train_plots:b}
-		\end{subfigure}
-	}
-	\caption{Comparison between UMAP planes of \textbf{train data} with original (a) and topic labels (b).}
+	\includegraphics[width=\linewidth]{./assets/umap_train_plots}
+	\caption{Comparison between UMAP planes of \textbf{train data} with original (left) and topic labels (right).}
 	\label{umap_train_plots}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\resizebox{\textwidth}{!}{%
-		\begin{subfigure}[b]{0.45\linewidth}
-			\includegraphics[width=\linewidth]{./assets/orig_umap_test_plot_labels}
-			\caption{Original labels}
-			\label{umap_test_plots:a}
-		\end{subfigure}
-		\begin{subfigure}[b]{0.45\linewidth}
-			\includegraphics[width=\linewidth]{./assets/top_umap_test_plot_labels}
-			\caption{Topic labels}
-			\label{umap_test_plots:b}
-		\end{subfigure}
-	}
-	\caption{Comparison between UMAP planes of \textbf{test data} with original (a) and topic labels (b).}
+	\includegraphics[width=\linewidth]{./assets/umap_test_plots}
+	\caption{Comparison between UMAP planes of \textbf{test data} with original (left) and topic labels (right).}
 	\label{umap_test_plots}
 \end{figure}
 
-An important characteristic of BERTopic is that it is able to identify noise, leading to a topic assignment where a portion of the observation are classified as outliers. This produces a cleaner map to explore the documents at the loss of samples that are not given a topic. In Figure \ref{umap_train_plots:b} the percentage of documents classified into the aforementioned category is 51.4\% - these are the light grey points scattered across the map.
+An important characteristic of BERTopic is that it is able to identify noise, leading to a topic assignment where a portion of the observation are classified as outliers. This produces a cleaner map to explore the documents at the loss of samples that are not given a topic. In Figure \ref{umap_train_plots} (left) the percentage of documents classified into the aforementioned category is 51.4\% - these are the light grey points scattered across the map.
 
 \section{Case Study}
 This use case is based on a real-world example, related to the recurrent tasks that the intelligence analysts at AICEP - Portuguese Trade \& Investment Agency have to perform. AICEP “is a government business entity, focused in encouraging the best competitive foreign companies to invest in Portugal and in contributing to the success of Portuguese companies abroad in their internationalization processes or export activities.” Given this mandate AICEP needs to monitor the world news and make sure it is updated with world events. Additionally, analysts at AICEP are called upon to produce reports on specific markets and industries, in order to guide the Portuguese state's diplomatic efforts and private company investments. These reports are pre-formatted, however the use and integration of text data remains a challenge. This is unfortunate as recent news and text documents allow a more detailed understanding of specific problems and nuances that are difficult to capture in an alphanumeric data table. The objective of this use case is to show how MapIntel can be used to mitigate this limitation and allow the inclusion of relevant text data in the report.
@@ -253,7 +231,7 @@ Once the data is cleaned, it follows the Indexing pipeline \ref{indexing_pipelin
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.45]{./assets/ui_screenshot}
+	\includegraphics[width=0.8\linewidth]{./assets/ui_screenshot}
 	\caption{\textbf{MapIntel webapp interface}. Composed of four main components: search box, interactive scatter plot, parameter sidebar, and list of results.}
 	\label{app_ui}
 \end{figure}
@@ -293,7 +271,7 @@ An additional feature of the app is the ability to browse documents through the 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.325]{./assets/map_screenshot}
+	\includegraphics[width=0.8\linewidth]{./assets/map_screenshot}
 	\caption{\textbf{UMAP projection of the corpus}. The documents' SBERT embeddings are projected on two dimensions with UMAP and the data points are colored according to their assigned topic. The map can be used interactively by zooming, panning, hovering, and selecting points. On hovering, the document text and some metadata is displayed and on selection the document is queried against the rest of the corpus. The query is marked with an "X" in the map.}
 	\label{app_map}
 \end{figure}
@@ -350,19 +328,8 @@ This work was supported by the \emph{Fundação para a Ciência e Tecnologia of 
 \section{Zoom on UMAP plot}
 \begin{figure}[H]
 	\centering
-	\resizebox{\textwidth}{!}{%
-		\begin{subfigure}[b]{0.45\linewidth}
-			\includegraphics[width=\linewidth]{./assets/orig_umap_train_plot_zoom_labels}
-			\caption{Original labels}
-			\label{umap_test_plots:a}
-		\end{subfigure}
-		\begin{subfigure}[b]{0.45\linewidth}
-			\includegraphics[width=\linewidth]{./assets/top_umap_train_plot_zoom_labels}
-			\caption{Topic labels}
-			\label{umap_test_plots:b}
-		\end{subfigure}
-	}
-	\caption{Zoom on technological region of UMAP. Comparison between UMAP planes of \textbf{train data} with original (a) and topic labels (b).}
+	\includegraphics[width=\linewidth]{./assets/umap_train_zoom_plots}
+	\caption{Zoom on technological region of UMAP. Comparison between UMAP planes of \textbf{train data} with original (left) and topic labels (right).}
 	\label{umap_train_plots_zoom}
 \end{figure}
 
